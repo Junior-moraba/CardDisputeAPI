@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CardDisputeAPI/CardDisputeAPI.csproj" />
+  <Project Path="CardDisputePortal.Core/CardDisputePortal.Core.csproj" />
+  <Project Path="CardDisputePortal.Infrastructure/CardDisputePortal.Infrastructure.csproj" />
+</Solution>
