@@ -18,8 +18,9 @@ namespace CardDisputeAPI.Controllers
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
         {
-            await _authService.SendOtpAsync(request.PhoneNumber);
-            return Ok(new { success = true, message = "OTP sent successfully", expiresIn = 300 });
+            var otp = await _authService.SendOtpAsync(request.PhoneNumber);
+            // Return OTP in response for development/testing (remove in production)
+            return Ok(new { success = true, message = "OTP sent successfully", otp, expiresIn = 300 });
         }
 
         [HttpPost("verify-otp")]

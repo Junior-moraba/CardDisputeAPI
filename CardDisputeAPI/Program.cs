@@ -1,4 +1,6 @@
 using CardDisputePortal.Infrastructure.Data;
+using CardDisputePortal.Infrastructure.Services;
+using CardDisputePortal.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +16,9 @@ builder.Services.AddSwaggerGen();
 // Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register AuthService
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
