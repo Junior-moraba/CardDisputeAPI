@@ -15,4 +15,7 @@ namespace CardDisputePortal.Core.DTOs
     );
 
     public record MerchantDto(string Name, string Category);
+
+    // Request DTO for listing transactions (accept userId in body)
+    public record GetTransactionsRequest(Guid UserId, int Page = 1, int Limit = 5);
 }

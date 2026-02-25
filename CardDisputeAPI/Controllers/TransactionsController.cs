@@ -1,12 +1,13 @@
-﻿using CardDisputePortal.Core.Entities;
+﻿using CardDisputePortal.Core.DTOs;
 using CardDisputePortal.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardDisputeAPI.Controllers
 {
+    [ApiController]
+    [Route("api/[controller]")]
     public class TransactionsController : ControllerBase
     {
-
         private readonly ITransactionService _transactionService;
 
         public TransactionsController(ITransactionService transactionService)
@@ -14,11 +15,11 @@ namespace CardDisputeAPI.Controllers
             _transactionService = transactionService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetTransactions([FromQuery] int page = 1, [FromQuery] int limit = 5)
+
+        [HttpPost("list")]
+        public async Task<IActionResult> GetTransactions([FromBody] GetTransactionsRequest request)
         {
-            var userId = Guid.Parse(User.FindFirst("userId")!.Value);
-            var transactions = await _transactionService.GetTransactionsAsync(userId, page, limit);
+            var transactions = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit);
             return Ok(new { success = true, data = transactions });
         }
 
