@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CardDisputePortal.Core.Enums;
 
 namespace CardDisputePortal.Core.DTOs
 {
     public record CreateDisputeRequest(
         Guid TransactionId,
-        string ReasonCode,
+        DisputeReason ReasonCode,
         string Details,
         bool EvidenceAttached
     );
@@ -14,11 +15,13 @@ namespace CardDisputePortal.Core.DTOs
     public record DisputeDto(
         Guid Id,
         Guid TransactionId,
-        string ReasonCode,
+        DisputeReason ReasonCode,
         string Details,
         bool EvidenceAttached,
         string Status,
         DateTime SubmittedAt,
         DateTime EstimatedResolutionDate
     );
+
+    public record GetDisputesRequest(Guid UserId, int Page = 1, int Limit = 5);
 }

@@ -25,12 +25,10 @@ namespace CardDisputeAPI.Controllers
             return CreatedAtAction(nameof(GetDispute), new { id = dispute.Id }, new { success = true, data = dispute });
         }
 
-
-        [HttpGet]
-        public async Task<IActionResult> GetDisputes([FromQuery] int page = 1, [FromQuery] int limit = 5)
+        [HttpPost("list")]
+        public async Task<IActionResult> GetDisputes([FromBody] GetDisputesRequest request)
         {
-            var userId = Guid.Parse(User.FindFirst("userId")!.Value);
-            var disputes = await _disputeService.GetDisputesAsync(userId, page, limit);
+            var disputes = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit);
             return Ok(new { success = true, data = disputes });
         }
 

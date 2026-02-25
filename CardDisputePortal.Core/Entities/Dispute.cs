@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Policy;
 using System.Text;
+using CardDisputePortal.Core.Enums;
 
 namespace CardDisputePortal.Core.Entities
 {
@@ -10,7 +11,9 @@ namespace CardDisputePortal.Core.Entities
         public Guid Id { get; set; }
         public Guid TransactionId { get; set; }
         public Guid UserId { get; set; }
-        public string ReasonCode { get; set; } = string.Empty;
+
+        public DisputeReason ReasonCode { get; set; } = DisputeReason.Other;
+
         public string Details { get; set; } = string.Empty;
         public bool EvidenceAttached { get; set; }
         public DisputeStatus Status { get; set; }
