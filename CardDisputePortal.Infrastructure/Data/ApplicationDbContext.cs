@@ -27,18 +27,24 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Amount).HasPrecision(18, 2);
             entity.HasOne(e => e.User)
                   .WithMany(u => u.Transactions)
-                  .HasForeignKey(e => e.UserId);
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Dispute>(entity =>
         {
             entity.HasKey(e => e.Id);
+
             entity.HasOne(e => e.Transaction)
                   .WithOne(t => t.Dispute)
-                  .HasForeignKey<Dispute>(d => d.TransactionId);
+                  .HasForeignKey<Dispute>(d => d.TransactionId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
             entity.HasOne(e => e.User)
                   .WithMany(u => u.Disputes)
-                  .HasForeignKey(e => e.UserId);
+                  .HasForeignKey(e => e.UserId)
+                  // Use NoAction to produce SQL "ON DELETE NO ACTION" (or Restrict if preferred)
+                  .OnDelete(DeleteBehavior.NoAction);
         });
 
         modelBuilder.Entity<Evidence>(entity =>
@@ -46,7 +52,8 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasOne(e => e.Dispute)
                   .WithMany(d => d.EvidenceFiles)
-                  .HasForeignKey(e => e.DisputeId);
+                  .HasForeignKey(e => e.DisputeId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
