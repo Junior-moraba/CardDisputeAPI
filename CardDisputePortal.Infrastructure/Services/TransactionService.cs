@@ -18,16 +18,20 @@ namespace CardDisputePortal.Infrastructure.Services
             _db = db;
         }
 
-        public async Task<List<TransactionDto>> GetTransactionsAsync(Guid userId, int page, int limit)
+        public async Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit)
         {
             if (page < 1) page = 1;
             if (limit < 1) limit = 5;
 
             var skip = (page - 1) * limit;
 
-            return await _db.Transactions
+            var query = _db.Transactions
                 .AsNoTracking()
-                .Where(t => t.UserId == userId)
+                .Where(t => t.UserId == userId);
+
+            var totalCount = await query.CountAsync();
+
+            var items = await query
                 .OrderByDescending(t => t.Date)
                 .Skip(skip)
                 .Take(limit)
@@ -41,6 +45,13 @@ namespace CardDisputePortal.Infrastructure.Services
                     t.Reference
                 ))
                 .ToListAsync();
+
+            return new PaginatedTransactionsResponse(
+                Page: page,
+                ReturnedCount: items.Count,
+                TotalCount: totalCount,
+                Items: items
+            );
         }
 
         public async Task<TransactionDto> GetTransactionByIdAsync(Guid userId, Guid transactionId)

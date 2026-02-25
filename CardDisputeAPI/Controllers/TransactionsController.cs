@@ -15,12 +15,11 @@ namespace CardDisputeAPI.Controllers
             _transactionService = transactionService;
         }
 
-
         [HttpPost("list")]
         public async Task<IActionResult> GetTransactions([FromBody] GetTransactionsRequest request)
         {
-            var transactions = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit);
-            return Ok(new { success = true, data = transactions });
+            var response = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit);
+            return Ok(new { success = true, data = response });
         }
 
         [HttpGet("{id}")]
