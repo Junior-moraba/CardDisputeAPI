@@ -1,13 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using CardDisputePortal.Core.Enums;
 
 namespace CardDisputePortal.Core.DTOs
 {
     public record CreateDisputeRequest(
+        Guid UserId,
         Guid TransactionId,
         DisputeReason ReasonCode,
+        string Details,
+        bool EvidenceAttached
+    );
+
+    // Form-based request (ReasonCode as string because form-data sends text)
+    public record CreateDisputeFormRequest(
+        Guid UserId,
+        Guid TransactionId,
+        string ReasonCode,
         string Details,
         bool EvidenceAttached
     );
@@ -23,5 +31,6 @@ namespace CardDisputePortal.Core.DTOs
         DateTime EstimatedResolutionDate
     );
 
+    // Request DTO for listing disputes (accept userId in body)
     public record GetDisputesRequest(Guid UserId, int Page = 1, int Limit = 5);
 }

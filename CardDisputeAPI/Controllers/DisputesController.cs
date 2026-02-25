@@ -1,11 +1,13 @@
 ﻿using CardDisputePortal.Core.DTOs;
+using CardDisputePortal.Core.Enums;
 using CardDisputePortal.Core.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using CardDisputePortal.Infrastructure.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace CardDisputeAPI.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DisputesController : Controller
@@ -17,11 +19,51 @@ namespace CardDisputeAPI.Controllers
             _disputeService = disputeService;
         }
 
+        // Accept both JSON and multipart/form-data
         [HttpPost]
-        public async Task<IActionResult> CreateDispute([FromBody] CreateDisputeRequest request)
+        [Consumes("application/json", "multipart/form-data")]
+        public async Task<IActionResult> CreateDispute()
         {
-            var userId = Guid.Parse(User.FindFirst("userId")!.Value);
-            var dispute = await _disputeService.CreateDisputeAsync(userId, request);
+            CreateDisputeRequest request;
+
+            if (Request.HasFormContentType)
+            {
+                var form = await Request.ReadFormAsync();
+
+                if (!Guid.TryParse(form["UserId"], out var userId) ||
+                    !Guid.TryParse(form["TransactionId"], out var transactionId))
+                {
+                    return BadRequest(new { success = false, message = "Invalid UserId or TransactionId." });
+                }
+
+                var reasonStr = form["ReasonCode"].ToString();
+                if (!Enum.TryParse<DisputeReason>(reasonStr, true, out var reason))
+                {
+                    return BadRequest(new { success = false, message = "Invalid ReasonCode." });
+                }
+
+                var details = form["Details"].ToString();
+                var evidenceAttached = bool.TryParse(form["EvidenceAttached"], out var ea) && ea;
+
+                // optional file: var attachment = form.Files.FirstOrDefault();
+
+                request = new CreateDisputeRequest(userId, transactionId, reason, details, evidenceAttached);
+            }
+            else
+            {
+                // Read JSON body
+                using var sr = new StreamReader(Request.Body);
+                var body = await sr.ReadToEndAsync();
+                if (string.IsNullOrWhiteSpace(body))
+                    return BadRequest(new { success = false, message = "Empty body." });
+
+                request = JsonSerializer.Deserialize<CreateDisputeRequest>(body, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? throw new InvalidOperationException("Failed to deserialize request.");
+            }
+
+            var dispute = await _disputeService.CreateDisputeAsync(request.UserId, request);
             return CreatedAtAction(nameof(GetDispute), new { id = dispute.Id }, new { success = true, data = dispute });
         }
 
