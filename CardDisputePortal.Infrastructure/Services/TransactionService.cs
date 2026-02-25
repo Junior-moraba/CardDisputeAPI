@@ -18,21 +18,39 @@ namespace CardDisputePortal.Infrastructure.Services
             _db = db;
         }
 
-        public async Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit)
+        public async Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit, string sortBy = "date", string sortOrder = "desc")
         {
             if (page < 1) page = 1;
             if (limit < 1) limit = 5;
 
             var skip = (page - 1) * limit;
 
-            var query = _db.Transactions
+            var baseQuery = _db.Transactions
                 .AsNoTracking()
                 .Where(t => t.UserId == userId);
 
-            var totalCount = await query.CountAsync();
+            var totalCount = await baseQuery.CountAsync();
 
-            var items = await query
-                .OrderByDescending(t => t.Date)
+            // normalize sort values
+            var sortByLower = (sortBy ?? "date").Trim().ToLowerInvariant();
+            var sortOrderLower = (sortOrder ?? "desc").Trim().ToLowerInvariant();
+
+            IQueryable<Core.Entities.Transaction> orderedQuery;
+
+            if (sortByLower == "amount")
+            {
+                orderedQuery = sortOrderLower == "asc"
+                    ? baseQuery.OrderBy(t => t.Amount)
+                    : baseQuery.OrderByDescending(t => t.Amount);
+            }
+            else // default sort by date
+            {
+                orderedQuery = sortOrderLower == "asc"
+                    ? baseQuery.OrderBy(t => t.Date)
+                    : baseQuery.OrderByDescending(t => t.Date);
+            }
+
+            var items = await orderedQuery
                 .Skip(skip)
                 .Take(limit)
                 .Select(t => new TransactionDto(
@@ -46,10 +64,13 @@ namespace CardDisputePortal.Infrastructure.Services
                 ))
                 .ToListAsync();
 
+            var totalPages = limit > 0 ? (int)Math.Ceiling((double)totalCount / limit) : 0;
+
             return new PaginatedTransactionsResponse(
                 Page: page,
                 ReturnedCount: items.Count,
                 TotalCount: totalCount,
+                TotalPages: totalPages,
                 Items: items
             );
         }

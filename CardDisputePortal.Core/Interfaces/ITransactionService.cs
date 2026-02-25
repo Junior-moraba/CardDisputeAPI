@@ -8,7 +8,7 @@ namespace CardDisputePortal.Core.Interfaces
 {
     public interface ITransactionService
     {
-        Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit);
+        Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit, string sortBy = "date", string sortOrder = "desc");
         Task<TransactionDto> GetTransactionByIdAsync(Guid userId, Guid transactionId);
     }
 }

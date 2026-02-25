@@ -18,7 +18,7 @@ namespace CardDisputeAPI.Controllers
         [HttpPost("list")]
         public async Task<IActionResult> GetTransactions([FromBody] GetTransactionsRequest request)
         {
-            var response = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit);
+            var response = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
             return Ok(new { success = true, data = response });
         }
 
