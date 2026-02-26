@@ -70,8 +70,8 @@ namespace CardDisputeAPI.Controllers
         [HttpPost("list")]
         public async Task<IActionResult> GetDisputes([FromBody] GetDisputesRequest request)
         {
-            var disputes = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit);
-            return Ok(new { success = true, data = disputes });
+            var response = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit);
+            return Ok(new { success = true, data = response });
         }
 
         [HttpGet("{id}")]

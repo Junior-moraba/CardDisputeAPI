@@ -58,16 +58,20 @@ namespace CardDisputePortal.Infrastructure.Services
             );
         }
 
-        public async Task<List<DisputeDto>> GetDisputesAsync(Guid userId, int page, int limit)
+        public async Task<PaginatedDisputesResponse> GetDisputesAsync(Guid userId, int page, int limit)
         {
             if (page < 1) page = 1;
             if (limit < 1) limit = 10;
 
             var skip = (page - 1) * limit;
 
-            return await _db.Disputes
+            var baseQuery = _db.Disputes
                 .AsNoTracking()
-                .Where(d => d.UserId == userId)
+                .Where(d => d.UserId == userId);
+
+            var totalCount = await baseQuery.CountAsync();
+
+            var items = await baseQuery
                 .OrderByDescending(d => d.SubmittedAt)
                 .Skip(skip)
                 .Take(limit)
@@ -82,6 +86,16 @@ namespace CardDisputePortal.Infrastructure.Services
                     d.EstimatedResolutionDate
                 ))
                 .ToListAsync();
+
+            var totalPages = limit > 0 ? (int)Math.Ceiling((double)totalCount / limit) : 0;
+
+            return new PaginatedDisputesResponse(
+                Page: page,
+                ReturnedCount: items.Count,
+                TotalCount: totalCount,
+                TotalPages: totalPages,
+                Items: items
+            );
         }
 
         public async Task<DisputeDto> GetDisputeByIdAsync(Guid userId, Guid disputeId)
