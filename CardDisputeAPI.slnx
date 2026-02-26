@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="CardDisputeAPI.Tests/CardDisputeAPI.Tests.csproj" Id="ad9a4925-f218-4731-b1d7-b1c1c8652d57" />
   <Project Path="CardDisputeAPI/CardDisputePortal.API.csproj" />
   <Project Path="CardDisputePortal.Core/CardDisputePortal.Core.csproj" />
   <Project Path="CardDisputePortal.Infrastructure/CardDisputePortal.Infrastructure.csproj" />

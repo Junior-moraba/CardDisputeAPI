@@ -26,11 +26,17 @@ namespace CardDisputePortal.Infrastructure.Services
 
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
+        private ApplicationDbContext ctx;
 
         public AuthService(ApplicationDbContext db, IConfiguration config)
         {
             _db = db;
             _config = config;
+        }
+
+        public AuthService(ApplicationDbContext ctx)
+        {
+            this.ctx = ctx;
         }
 
         private string GenerateJwtToken(Core.Entities.User user)
