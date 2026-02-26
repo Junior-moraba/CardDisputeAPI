@@ -29,5 +29,32 @@ namespace CardDisputeAPI.Controllers
             var response = await _authService.VerifyOtpAsync(request.PhoneNumber, request.Otp);
             return Ok(new { success = true, data = response });
         }
+
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return BadRequest(new { success = false, message = "RefreshToken is required." });
+
+            try
+            {
+                var response = await _authService.RefreshTokenAsync(request.RefreshToken);
+                return Ok(new { success = true, data = response });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+                return BadRequest(new { success = false, message = "RefreshToken is required." });
+
+            await _authService.LogoutAsync(request.RefreshToken);
+            return Ok(new { success = true, message = "Logged out." });
+        }
     }
 }

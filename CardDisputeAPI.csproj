@@ -17,5 +17,6 @@ Pseudocode / Plan:
   <ItemGroup>
     <!-- Entity Framework Core SQL Server provider: provides the UseSqlServer extension -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.15" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
   </ItemGroup>
 </Project>

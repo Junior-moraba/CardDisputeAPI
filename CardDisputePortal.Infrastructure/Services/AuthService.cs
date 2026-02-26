@@ -5,21 +5,55 @@ using CardDisputePortal.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Concurrent;
+using System.Text;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.Threading.Tasks;
 
 namespace CardDisputePortal.Infrastructure.Services
 {
     public class AuthService : IAuthService
     {
-        // Simple in-memory OTP store: phone -> (otp, expiresAt)
         private static readonly ConcurrentDictionary<string, (string Otp, DateTime ExpiresAt)> _otpStore
             = new();
+        private static readonly ConcurrentDictionary<string, (Guid UserId, string AccessToken, DateTime ExpiresAt)> _sessions
+            = new();
+
+        // Session lifetime in minutes
+        private const int SessionMinutes = 5;
 
         private readonly ApplicationDbContext _db;
+        private readonly IConfiguration _config;
 
-        public AuthService(ApplicationDbContext db)
+        public AuthService(ApplicationDbContext db, IConfiguration config)
         {
             _db = db;
+            _config = config;
+        }
+
+        private string GenerateJwtToken(Core.Entities.User user)
+        {
+            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
+            var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim("userId", user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.PhoneNumber ?? string.Empty)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                notBefore: DateTime.UtcNow,
+                expires: DateTime.UtcNow.AddMinutes(SessionMinutes),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public Task<string> SendOtpAsync(string phoneNumber)
@@ -32,8 +66,7 @@ namespace CardDisputePortal.Infrastructure.Services
 
             _otpStore.AddOrUpdate(phoneNumber, (otp, expiresAt), (_, __) => (otp, expiresAt));
 
-            // In a real implementation you'd send the OTP via SMS here.
-            // For development we simply return it.
+            // In a real implementation send the OTP via SMS here..
             return Task.FromResult(otp);
         }
 
@@ -58,7 +91,6 @@ namespace CardDisputePortal.Infrastructure.Services
             // OTP validated; remove it
             _otpStore.TryRemove(phoneNumber, out _);
 
-            // Find or create user by phone number
             var user = await _db.Users.FirstOrDefaultAsync(u => u.PhoneNumber == phoneNumber);
             if (user == null)
             {
@@ -73,12 +105,53 @@ namespace CardDisputePortal.Infrastructure.Services
                 await _db.SaveChangesAsync();
             }
 
-            // Return dummy tokens (replace with real JWT generation)
-            var accessToken = Guid.NewGuid().ToString();
-            var refreshToken = Guid.NewGuid().ToString();
+            // Issue JWT access token and a refresh token
+            var accessToken = GenerateJwtToken(user);
+            var refreshToken = Guid.NewGuid().ToString(); // rotate/secure this in prod
+            var expiresAt = DateTime.UtcNow.AddMinutes(SessionMinutes);
+
+            _sessions[refreshToken] = (user.Id, accessToken, expiresAt);
 
             var userDto = new UserDto(user.Id, user.PhoneNumber, user.Name);
             return new AuthResponse(accessToken, refreshToken, userDto);
+        }
+
+        public Task LogoutAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                throw new ArgumentException("Missing refresh token.", nameof(refreshToken));
+
+            _sessions.TryRemove(refreshToken, out _);
+            return Task.CompletedTask;
+        }
+
+        public Task<AuthResponse> RefreshTokenAsync(string refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+                throw new ArgumentException("Missing refresh token.", nameof(refreshToken));
+
+            if (!_sessions.TryGetValue(refreshToken, out var session))
+                throw new InvalidOperationException("Invalid refresh token.");
+
+            // Check expiry
+            if (session.ExpiresAt < DateTime.UtcNow)
+            {
+                // expired - remove and fail
+                _sessions.TryRemove(refreshToken, out _);
+                throw new InvalidOperationException("Refresh token expired.");
+            }
+
+            // rotate tokens
+            var user = _db.Users.Find(session.UserId) ?? throw new InvalidOperationException("User not found.");
+            var newAccessToken = GenerateJwtToken(user);
+            var newRefreshToken = Guid.NewGuid().ToString();
+            var newExpiresAt = DateTime.UtcNow.AddMinutes(SessionMinutes);
+
+            _sessions.TryRemove(refreshToken, out _);
+            _sessions[newRefreshToken] = (session.UserId, newAccessToken, newExpiresAt);
+
+            var userDto = new UserDto(user.Id, user.PhoneNumber, user.Name);
+            return Task.FromResult(new AuthResponse(newAccessToken, newRefreshToken, userDto));
         }
     }
 }
