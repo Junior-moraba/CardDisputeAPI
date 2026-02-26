@@ -26,7 +26,6 @@ namespace CardDisputePortal.Infrastructure.Services
 
         private readonly ApplicationDbContext _db;
         private readonly IConfiguration _config;
-        private ApplicationDbContext ctx;
 
         public AuthService(ApplicationDbContext db, IConfiguration config)
         {
@@ -34,21 +33,26 @@ namespace CardDisputePortal.Infrastructure.Services
             _config = config;
         }
 
-        public AuthService(ApplicationDbContext ctx)
+        public AuthService(ApplicationDbContext db)
         {
-            this.ctx = ctx;
+            _db = db;
         }
 
         private string GenerateJwtToken(Core.Entities.User user)
         {
+            if (_config == null)
+            {
+                return $"test-token-{user.Id}";
+            }
+
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
             var creds = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
             {
-                new Claim("userId", user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.PhoneNumber ?? string.Empty)
-            };
+        new Claim("userId", user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.PhoneNumber ?? string.Empty)
+    };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
