@@ -2,12 +2,14 @@
 using CardDisputePortal.Core.Enums;
 using CardDisputePortal.Core.Interfaces;
 using CardDisputePortal.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace CardDisputeAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class DisputesController : Controller

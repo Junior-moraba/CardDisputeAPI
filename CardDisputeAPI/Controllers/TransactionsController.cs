@@ -1,9 +1,11 @@
 ﻿using CardDisputePortal.Core.DTOs;
 using CardDisputePortal.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CardDisputeAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class TransactionsController : ControllerBase
