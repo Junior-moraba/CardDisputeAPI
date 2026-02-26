@@ -37,7 +37,9 @@ namespace CardDisputePortal.Core.DTOs
     public record GetDisputesRequest(
         Guid UserId,
         [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Page = 1,
-        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Limit = 5
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Limit = 5,
+        string SortBy = "date",
+        string SortOrder = "desc"
     );
 
     public record PaginatedDisputesResponse(

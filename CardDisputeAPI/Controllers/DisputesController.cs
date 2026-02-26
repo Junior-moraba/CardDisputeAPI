@@ -17,9 +17,8 @@ namespace CardDisputeAPI.Controllers
         public DisputesController(IDisputeService disputeService)
         {
             _disputeService = disputeService;
-        }
+        }           
 
-        // Accept both JSON and multipart/form-data
         [HttpPost]
         [Consumes("application/json", "multipart/form-data")]
         public async Task<IActionResult> CreateDispute()
@@ -45,13 +44,11 @@ namespace CardDisputeAPI.Controllers
                 var details = form["Details"].ToString();
                 var evidenceAttached = bool.TryParse(form["EvidenceAttached"], out var ea) && ea;
 
-                // optional file: var attachment = form.Files.FirstOrDefault();
 
                 request = new CreateDisputeRequest(userId, transactionId, reason, details, evidenceAttached);
             }
             else
             {
-                // Read JSON body
                 using var sr = new StreamReader(Request.Body);
                 var body = await sr.ReadToEndAsync();
                 if (string.IsNullOrWhiteSpace(body))
@@ -70,7 +67,7 @@ namespace CardDisputeAPI.Controllers
         [HttpPost("list")]
         public async Task<IActionResult> GetDisputes([FromBody] GetDisputesRequest request)
         {
-            var response = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit);
+            var response = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
             return Ok(new { success = true, data = response });
         }
 

@@ -59,7 +59,7 @@ namespace CardDisputePortal.Infrastructure.Services
             );
         }
 
-        public async Task<PaginatedDisputesResponse> GetDisputesAsync(Guid userId, int page, int limit)
+        public async Task<PaginatedDisputesResponse> GetDisputesAsync(Guid userId, int page, int limit, string sortBy = "date", string sortOrder = "desc")
         {
             if (page < 1) page = 1;
             if (limit < 1) limit = 10;
@@ -72,8 +72,25 @@ namespace CardDisputePortal.Infrastructure.Services
 
             var totalCount = await baseQuery.CountAsync();
 
-            var items = await baseQuery
-                .OrderByDescending(d => d.SubmittedAt)
+            var sortByLower = (sortBy ?? "date").Trim().ToLowerInvariant();
+            var sortOrderLower = (sortOrder ?? "desc").Trim().ToLowerInvariant();
+
+            IQueryable<Dispute> orderedQuery;
+
+            if (sortByLower == "status")
+            {
+                orderedQuery = sortOrderLower == "asc"
+                    ? baseQuery.OrderBy(d => d.Status)
+                    : baseQuery.OrderByDescending(d => d.Status);
+            }
+            else // default sort by submitted date
+            {
+                orderedQuery = sortOrderLower == "asc"
+                    ? baseQuery.OrderBy(d => d.SubmittedAt)
+                    : baseQuery.OrderByDescending(d => d.SubmittedAt);
+            }
+
+            var items = await orderedQuery
                 .Skip(skip)
                 .Take(limit)
                 .Select(d => new DisputeDto(
