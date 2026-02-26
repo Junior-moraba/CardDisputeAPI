@@ -1,5 +1,6 @@
 ﻿using System;
 using CardDisputePortal.Core.Enums;
+using System.Text.Json.Serialization;
 
 namespace CardDisputePortal.Core.DTOs
 {
@@ -15,7 +16,7 @@ namespace CardDisputePortal.Core.DTOs
     public record CreateDisputeFormRequest(
         Guid UserId,
         Guid TransactionId,
-        string ReasonCode,
+        DisputeReason ReasonCode,
         string Details,
         bool EvidenceAttached
     );
@@ -23,7 +24,7 @@ namespace CardDisputePortal.Core.DTOs
     public record DisputeDto(
         Guid Id,
         Guid TransactionId,
-        DisputeReason ReasonCode,
+        string ReasonCode,
         string Details,
         bool EvidenceAttached,
         string Status,
@@ -32,5 +33,9 @@ namespace CardDisputePortal.Core.DTOs
     );
 
     // Request DTO for listing disputes (accept userId in body)
-    public record GetDisputesRequest(Guid UserId, int Page = 1, int Limit = 5);
+    public record GetDisputesRequest(
+        Guid UserId,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Page = 1,
+        [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Limit = 5
+    );
 }

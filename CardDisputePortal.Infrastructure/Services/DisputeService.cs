@@ -49,7 +49,7 @@ namespace CardDisputePortal.Infrastructure.Services
             return new DisputeDto(
                 dispute.Id,
                 dispute.TransactionId,
-                dispute.ReasonCode,
+                dispute.ReasonCode.ToString(),
                 dispute.Details,
                 dispute.EvidenceAttached,
                 dispute.Status.ToString(),
@@ -74,7 +74,7 @@ namespace CardDisputePortal.Infrastructure.Services
                 .Select(d => new DisputeDto(
                     d.Id,
                     d.TransactionId,
-                    d.ReasonCode,
+                    d.ReasonCode.ToString(),
                     d.Details,
                     d.EvidenceAttached,
                     d.Status.ToString(),
@@ -92,7 +92,7 @@ namespace CardDisputePortal.Infrastructure.Services
                 .Select(d => new DisputeDto(
                     d.Id,
                     d.TransactionId,
-                    d.ReasonCode,
+                    d.ReasonCode.ToString(),
                     d.Details,
                     d.EvidenceAttached,
                     d.Status.ToString(),
