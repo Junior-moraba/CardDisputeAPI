@@ -40,7 +40,6 @@ namespace CardDisputePortal.Infrastructure.Services
                 EstimatedResolutionDate = DateTime.UtcNow.AddDays(14)
             };
 
-            // Mark transaction as disputed
             transaction.Status = TransactionStatus.Disputed;
 
             _db.Disputes.Add(dispute);
@@ -49,6 +48,8 @@ namespace CardDisputePortal.Infrastructure.Services
             return new DisputeDto(
                 dispute.Id,
                 dispute.TransactionId,
+                new MerchantDto(transaction.MerchantName, transaction.MerchantCategory),
+                transaction.Reference,
                 dispute.ReasonCode.ToString(),
                 dispute.Details,
                 dispute.EvidenceAttached,
@@ -78,6 +79,8 @@ namespace CardDisputePortal.Infrastructure.Services
                 .Select(d => new DisputeDto(
                     d.Id,
                     d.TransactionId,
+                    new MerchantDto(d.Transaction.MerchantName, d.Transaction.MerchantCategory),
+                    d.Transaction.Reference,
                     d.ReasonCode.ToString(),
                     d.Details,
                     d.EvidenceAttached,
@@ -106,6 +109,8 @@ namespace CardDisputePortal.Infrastructure.Services
                 .Select(d => new DisputeDto(
                     d.Id,
                     d.TransactionId,
+                    new MerchantDto(d.Transaction.MerchantName, d.Transaction.MerchantCategory),
+                    d.Transaction.Reference,
                     d.ReasonCode.ToString(),
                     d.Details,
                     d.EvidenceAttached,

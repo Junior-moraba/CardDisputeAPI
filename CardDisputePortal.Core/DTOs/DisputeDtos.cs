@@ -12,7 +12,7 @@ namespace CardDisputePortal.Core.DTOs
         string Details,
         bool EvidenceAttached
     );
-   
+
     public record CreateDisputeFormRequest(
         Guid UserId,
         Guid TransactionId,
@@ -24,6 +24,8 @@ namespace CardDisputePortal.Core.DTOs
     public record DisputeDto(
         Guid Id,
         Guid TransactionId,
+        MerchantDto Merchant,
+        string Reference,
         string ReasonCode,
         string Details,
         bool EvidenceAttached,
@@ -37,6 +39,7 @@ namespace CardDisputePortal.Core.DTOs
         [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Page = 1,
         [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] int Limit = 5
     );
+
     public record PaginatedDisputesResponse(
         int Page,
         int ReturnedCount,
