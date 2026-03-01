@@ -75,6 +75,59 @@ namespace CardDisputePortal.Infrastructure.Services
             );
         }
 
+        public async Task<List<TransactionDto>> CreateDummyTransactionsAsync(Guid userId)
+        {
+            var southAfricanTransactions = new[]
+            {
+                new { Merchant = "Woolworths", Category = "Groceries", Amount = 1245.67m },
+                new { Merchant = "Capitec Bank ATM", Category = "Banking", Amount = 500.00m },
+                new { Merchant = "Sasol", Category = "Fuel", Amount = 850.00m },
+                new { Merchant = "Checkers", Category = "Groceries", Amount = 678.90m },
+                new { Merchant = "Dis-Chem", Category = "Health & Beauty", Amount = 234.50m },
+                new { Merchant = "Mugg & Bean", Category = "Food & Beverage", Amount = 189.00m },
+                new { Merchant = "Edgars", Category = "Retail", Amount = 1899.99m },
+                new { Merchant = "Spur", Category = "Food & Beverage", Amount = 456.80m },
+                new { Merchant = "BP", Category = "Fuel", Amount = 720.00m },
+                new { Merchant = "Game", Category = "Electronics", Amount = 2999.99m },
+                new { Merchant = "Vida e Caffè", Category = "Food & Beverage", Amount = 67.50m }
+            };
+
+            var transactions = new List<Core.Entities.Transaction>();
+            var random = new Random();
+
+            for (int i = 0; i < southAfricanTransactions.Length; i++)
+            {
+                var txn = southAfricanTransactions[i];
+                var transaction = new Core.Entities.Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    Amount = txn.Amount,
+                    MerchantName = txn.Merchant,
+                    MerchantCategory = txn.Category,
+                    Date = DateTime.UtcNow.AddDays(-random.Next(1, 30)),
+                    Status = (CardDisputePortal.Core.Entities.TransactionStatus)random.Next(0, 2),
+                    Reference = $"TXN{DateTime.Now.Ticks.ToString().Substring(10)}{i:D3}",
+                    Currency = "ZAR"
+                };
+                transactions.Add(transaction);
+            }
+
+            _db.Transactions.AddRange(transactions);
+            await _db.SaveChangesAsync();
+
+            return transactions.Select(t => new TransactionDto(
+                t.Id,
+                t.Date,
+                new MerchantDto(t.MerchantName, t.MerchantCategory),
+                t.Amount,
+                t.Currency,
+                t.Status.ToString(),
+                t.Reference
+            )).ToList();
+        }
+
+
         public async Task<TransactionDto> GetTransactionByIdAsync(Guid userId, Guid transactionId)
         {
             var dto = await _db.Transactions

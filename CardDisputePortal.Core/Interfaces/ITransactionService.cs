@@ -10,5 +10,6 @@ namespace CardDisputePortal.Core.Interfaces
     {
         Task<PaginatedTransactionsResponse> GetTransactionsAsync(Guid userId, int page, int limit, string sortBy = "date", string sortOrder = "desc");
         Task<TransactionDto> GetTransactionByIdAsync(Guid userId, Guid transactionId);
+        Task<List<TransactionDto>> CreateDummyTransactionsAsync(Guid userId);
     }
 }

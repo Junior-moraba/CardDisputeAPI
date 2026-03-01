@@ -26,6 +26,14 @@ namespace CardDisputeAPI.Controllers
             return Ok(new { success = true, data = response });
         }
 
+        [HttpPost("create-dummy")]
+        public async Task<IActionResult> CreateDummyTransactions([FromBody] CreateDummyTransactionsRequest request)
+        {
+            var transactions = await _transactionService.CreateDummyTransactionsAsync(request.UserId);
+            return Ok(new { success = true, message = $"Created {transactions.Count} dummy transactions", data = transactions });
+        }
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTransaction(Guid id)
         {
