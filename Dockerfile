@@ -1,7 +1,11 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS base
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
+
+# Install EF Core tools
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
@@ -21,4 +25,5 @@ RUN dotnet publish "CardDisputePortal.API.csproj" -c Release -o /app/publish /p:
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+COPY --from=build /src .
 ENTRYPOINT ["dotnet", "CardDisputePortal.API.dll"]

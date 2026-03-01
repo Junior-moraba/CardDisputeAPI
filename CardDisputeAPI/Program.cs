@@ -44,7 +44,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5173", "http://localhost:4173")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -53,17 +53,27 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Auto-migrate database on startup
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.EnsureCreated();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment() || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_HTTPS_PORT")))
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
-
 
 app.Run();
