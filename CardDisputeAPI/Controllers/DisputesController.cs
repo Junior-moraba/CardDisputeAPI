@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CardDisputeAPI.Controllers
 {
+    [EnableRateLimiting("ApiPolicy")]
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]

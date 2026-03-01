@@ -27,4 +27,6 @@ namespace CardDisputePortal.Core.DTOs
         int TotalPages,
         List<TransactionDto> Items
     );
+
+    public record CreateDummyTransactionsRequest(Guid UserId);
 }

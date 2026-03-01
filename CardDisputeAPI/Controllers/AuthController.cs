@@ -1,11 +1,13 @@
 ﻿using CardDisputePortal.Core.DTOs;
 using CardDisputePortal.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CardDisputeAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [EnableRateLimiting("AuthPolicy")]
     public class AuthController : Controller
     {
         private readonly IAuthService _authService;

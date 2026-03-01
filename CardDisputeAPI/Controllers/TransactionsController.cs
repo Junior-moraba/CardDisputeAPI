@@ -2,9 +2,11 @@
 using CardDisputePortal.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CardDisputeAPI.Controllers
 {
+    [EnableRateLimiting("ApiPolicy")]
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
@@ -23,6 +25,14 @@ namespace CardDisputeAPI.Controllers
             var response = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
             return Ok(new { success = true, data = response });
         }
+
+        [HttpPost("create-dummy")]
+        public async Task<IActionResult> CreateDummyTransactions([FromBody] CreateDummyTransactionsRequest request)
+        {
+            var transactions = await _transactionService.CreateDummyTransactionsAsync(request.UserId);
+            return Ok(new { success = true, message = $"Created {transactions.Count} dummy transactions", data = transactions });
+        }
+
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTransaction(Guid id)
