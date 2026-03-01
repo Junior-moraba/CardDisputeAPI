@@ -4,45 +4,84 @@ A RESTful API for managing card transaction disputes built with ASP.NET Core and
 
 ## Prerequisites
 
-- .NET 10.0 SDK
-- SQL Server (LocalDB, SQL Server Express, or Docker)
-- Docker (optional, for containerized deployment)
+- .NET 10.0 SDK (for local development)
+- Docker & Docker Compose (for containerized deployment)
 
 ## Project Structure
+```
 CardDisputeAPI/
-├── CardDisputeAPI/ # API layer (Controllers, Program.cs)
-├── CardDisputePortal.Core/ # Domain layer (Entities, DTOs, Interfaces)
-├── CardDisputePortal.Infrastructure/ # Data layer (DbContext, Services)
-└── CardDisputeAPI.Tests/ # Unit tests
+├── CardDisputeAPI/                    # API layer (Controllers, Program.cs)
+├── CardDisputePortal.Core/            # Domain layer (Entities, DTOs, Interfaces)
+├── CardDisputePortal.Infrastructure/  # Data layer (DbContext, Services)
+└── CardDisputeAPI.Tests/              # Unit tests
+```
 
-
-
-## Quick Start
+## Docker Deployment (Recommended)
 
 ### 1. Clone Repository
-
 ```bash
 git clone https://github.com/Junior-moraba/CardDisputeAPI.git
 cd CardDisputeAPI
+```
 
-### 2. Restore dependencies
+### 2. Build and Run with Docker Compose
+```bash
+docker-compose up -d --build
+```
+
+This automatically:
+- Builds the API container
+- Starts SQL Server container
+- Creates the database and applies migrations
+- Seeds test data
+
+### 3. Access the API
+- API: http://localhost:7231
+- Swagger UI: http://localhost:7231/swagger
+- SQL Server: localhost:1433 (sa/YourStrong@Passw0rd)
+
+### 4. View Logs
+```bash
+docker-compose logs -f api
+```
+
+### 5. Stop Containers
+```bash
+docker-compose down
+```
+
+## Test User
+
+The application includes a predefined test user:
+- **Phone Number**: `0648952191`
+- **Name**: Junior Moraba
+- Includes 15 sample transactions with 3 disputes
+
+Use this phone number to test authentication and dispute functionality.
+
+## Local Development
+
+### 1. Restore Dependencies
+```bash
 dotnet restore
+```
 
-### 3. Update Database
+### 2. Update Database
+```bash
 cd CardDisputeAPI
 dotnet ef database update
 cd ..
+```
 
-
-### 4. Run the API
+### 3. Run the API
+```bash
 dotnet run --project CardDisputeAPI/CardDisputePortal.API.csproj
-
+```
 
 API will be available at: https://localhost:7000 or http://localhost:5000
 
-Swagger UI: https://localhost:7000/swagger
-
-## Running tests
+## Running Tests
+```bash
 # Run all tests
 dotnet test
 
@@ -51,41 +90,19 @@ dotnet test --verbosity normal
 
 # Run specific test class
 dotnet test --filter "FullyQualifiedName~AuthServiceTests"
-
-
-## Docker Deployment
-
-### 1. Build and Run with Docker Compose
-docker-compose up -d
-
-This starts:
-
-API on http://localhost:5000
-
-SQL Server on localhost:1433
-
-### 2. Apply migrations
-docker-compose exec api dotnet ef database update
-
-### 3. View Logs
-docker-compose logs -f api
-
-
-### 4. Stop Containers
-docker-compose down
+```
 
 ## Technology Stack
-ASP.NET Core 10.0
-Entity Framework Core 10.0
-SQL Server
-JWT Authentication
-xUnit for testing
-Docker
-
-
+- ASP.NET Core 10.0
+- Entity Framework Core 10.0
+- SQL Server
+- JWT Authentication
+- xUnit for testing
+- Docker
 
 ## Notes
-OTP codes are returned in the response for testing purposes (remove in production)
-JWT tokens expire after 5 minutes
-Refresh tokens are stored in-memory 
-CORS is configured for localhost:5173 and localhost:4173
+- OTP codes are returned in the response for testing purposes (Only for testing purposes)
+- JWT tokens expire after 5 minutes
+- Refresh tokens are stored in-memory
+- CORS is configured for localhost:5173 and localhost:4173
+- Database is automatically created and seeded on first run
