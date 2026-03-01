@@ -5,6 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using CardDisputePortal.API.Middleware;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +55,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 // Auto-migrate database and seed data on startup
 using (var scope = app.Services.CreateScope())
