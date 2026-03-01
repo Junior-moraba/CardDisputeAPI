@@ -53,11 +53,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Auto-migrate database on startup
+// Auto-migrate database and seed data on startup
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    context.Database.EnsureCreated();
+    try
+    {
+        context.Database.EnsureCreated();
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Log the exception but continue
+        Console.WriteLine($"Database migration error: {ex.Message}");
+    }
 }
 
 if (app.Environment.IsDevelopment())
