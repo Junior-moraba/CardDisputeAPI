@@ -2,9 +2,11 @@
 using CardDisputePortal.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CardDisputeAPI.Controllers
 {
+    [EnableRateLimiting("ApiPolicy")]
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
