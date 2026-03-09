@@ -9,19 +9,21 @@ using CardDisputePortal.API.Middleware;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
+using FluentValidation;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+using Microsoft.AspNetCore.Mvc;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
-builder.Services.AddControllers();
-builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddControllers(options =>
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.ConsumesAttribute("application/json")));
+
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
-builder.Services.Configure<MvcOptions>(options =>
-{
-    options.Filters.Add(new ConsumesAttribute("application/json"));
-});
+builder.Services.AddFluentValidationAutoValidation();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
