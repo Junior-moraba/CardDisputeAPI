@@ -8,11 +8,13 @@ using System.Text;
 using CardDisputePortal.API.Middleware;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
-
+using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((ctx, config) =>
+    config.ReadFrom.Configuration(ctx.Configuration));
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -104,7 +106,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         // Log the exception but continue
-        Console.WriteLine($"Database migration error: {ex.Message}");
+        Log.Error(ex, "Database migration error");
     }
 }
 
