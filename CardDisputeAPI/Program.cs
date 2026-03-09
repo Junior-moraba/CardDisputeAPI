@@ -20,8 +20,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((ctx, config) =>
     config.ReadFrom.Configuration(ctx.Configuration));
 builder.Services.AddControllers(options =>
-    options.Filters.Add(new Microsoft.AspNetCore.Mvc.ConsumesAttribute("application/json")));
-
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.ConsumesAttribute("application/json"))
+);
+builder.Services.AddResponseCaching();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddFluentValidationAutoValidation();
 
@@ -127,6 +128,7 @@ if (!app.Environment.IsDevelopment() || !string.IsNullOrEmpty(Environment.GetEnv
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseResponseCaching();
 app.MapControllers();
 app.MapHealthChecks("/health");
 

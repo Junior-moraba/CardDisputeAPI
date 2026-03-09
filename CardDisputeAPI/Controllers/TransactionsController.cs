@@ -35,6 +35,7 @@ namespace CardDisputeAPI.Controllers
 
 
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 60, VaryByHeader = "Authorization")]
         public async Task<IActionResult> GetTransaction(Guid id)
         {
             var userId = Guid.Parse(User.FindFirst("userId")!.Value);
