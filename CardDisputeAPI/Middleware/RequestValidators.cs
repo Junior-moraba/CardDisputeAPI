@@ -7,7 +7,7 @@ public class SendOtpRequestValidator : AbstractValidator<SendOtpRequest>
 {
     public SendOtpRequestValidator()
     {
-        RuleFor(x => x.PhoneNumber).NotEmpty().Matches(@"^\+?[1-9]\d{7,14}$");
+        RuleFor(x => x.PhoneNumber).NotEmpty().Matches(@"^\d{10}$");
     }
 }
 
@@ -15,7 +15,7 @@ public class VerifyOtpRequestValidator : AbstractValidator<VerifyOtpRequest>
 {
     public VerifyOtpRequestValidator()
     {
-        RuleFor(x => x.PhoneNumber).NotEmpty().Matches(@"^\+?[1-9]\d{7,14}$");
+        RuleFor(x => x.PhoneNumber).NotEmpty().Matches(@"^\d{10}$");
         RuleFor(x => x.Otp).NotEmpty().Length(6).Matches(@"^\d{6}$");
     }
 }
