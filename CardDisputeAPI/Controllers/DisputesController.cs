@@ -24,7 +24,7 @@ namespace CardDisputeAPI.Controllers
         }           
 
         [HttpPost]
-        [Consumes("application/json", "multipart/form-data")]
+        // [Consumes("application/json", "multipart/form-data")]
         public async Task<IActionResult> CreateDispute()
         {
             CreateDisputeRequest request;
