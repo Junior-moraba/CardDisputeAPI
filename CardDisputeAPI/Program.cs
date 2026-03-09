@@ -7,19 +7,30 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CardDisputePortal.API.Middleware;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
-
+using Serilog;
+using FluentValidation;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Host.UseSerilog((ctx, config) =>
+    config.ReadFrom.Configuration(ctx.Configuration));
+builder.Services.AddControllers(options =>
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.ConsumesAttribute("application/json"))
+);
+builder.Services.AddResponseCaching();
+builder.Services.AddMemoryCache();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddFluentValidationAutoValidation();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
 builder.Services.AddScoped<IDisputeService, DisputeService>();
@@ -97,7 +108,7 @@ using (var scope = app.Services.CreateScope())
     catch (Exception ex)
     {
         // Log the exception but continue
-        Console.WriteLine($"Database migration error: {ex.Message}");
+        Log.Error(ex, "Database migration error");
     }
 }
 
@@ -115,6 +126,8 @@ if (!app.Environment.IsDevelopment() || !string.IsNullOrEmpty(Environment.GetEnv
 app.UseCors("AllowReactApp");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseResponseCaching();
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

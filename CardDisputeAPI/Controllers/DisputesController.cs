@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CardDisputeAPI.Controllers
 {
@@ -17,14 +18,17 @@ namespace CardDisputeAPI.Controllers
     public class DisputesController : Controller
     {
         private readonly IDisputeService _disputeService;
+        private readonly IMemoryCache _cache;
 
-        public DisputesController(IDisputeService disputeService)
+        public DisputesController(IDisputeService disputeService, IMemoryCache cache)
         {
             _disputeService = disputeService;
+            _cache = cache;
         }           
 
+        /// <summary>Creates a new dispute for a transaction.</summary>
         [HttpPost]
-        [Consumes("application/json", "multipart/form-data")]
+        // [Consumes("application/json", "multipart/form-data")]
         public async Task<IActionResult> CreateDispute()
         {
             CreateDisputeRequest request;
@@ -68,14 +72,22 @@ namespace CardDisputeAPI.Controllers
             return CreatedAtAction(nameof(GetDispute), new { id = dispute.Id }, new { success = true, data = dispute });
         }
 
+        /// <summary>Returns a paginated list of disputes for the specified user.</summary>
         [HttpPost("list")]
         public async Task<IActionResult> GetDisputes([FromBody] GetDisputesRequest request)
         {
-            var response = await _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
+            var key = $"disputes:{request.UserId}:{request.Page}:{request.Limit}:{request.SortBy}:{request.SortOrder}";
+            var response = await _cache.GetOrCreateAsync(key, entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+                return _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
+            });
             return Ok(new { success = true, data = response });
         }
 
+        /// <summary>Returns a single dispute by ID.</summary>
         [HttpGet("{id}")]
+        [ResponseCache(Duration = 60, VaryByHeader = "Authorization")]
         public async Task<IActionResult> GetDispute(Guid id)
         {
             var userId = Guid.Parse(User.FindFirst("userId")!.Value);
