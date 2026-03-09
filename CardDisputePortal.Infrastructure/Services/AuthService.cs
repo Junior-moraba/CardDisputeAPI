@@ -135,7 +135,7 @@ namespace CardDisputePortal.Infrastructure.Services
             return Task.CompletedTask;
         }
 
-        public Task<AuthResponse> RefreshTokenAsync(string refreshToken)
+        public async Task<AuthResponse> RefreshTokenAsync(string refreshToken)
         {
             if (string.IsNullOrWhiteSpace(refreshToken))
                 throw new ArgumentException("Missing refresh token.", nameof(refreshToken));
@@ -152,7 +152,7 @@ namespace CardDisputePortal.Infrastructure.Services
             }
 
             // rotate tokens
-            var user = _db.Users.Find(session.UserId) ?? throw new InvalidOperationException("User not found.");
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == session.UserId) ?? throw new InvalidOperationException("User not found.");
             var newAccessToken = GenerateJwtToken(user);
             var newRefreshToken = Guid.NewGuid().ToString();
             var newExpiresAt = DateTime.UtcNow.AddMinutes(SessionMinutes);
@@ -161,7 +161,7 @@ namespace CardDisputePortal.Infrastructure.Services
             _sessions[newRefreshToken] = (session.UserId, newAccessToken, newExpiresAt);
 
             var userDto = new UserDto(user.Id, user.PhoneNumber, user.Name);
-            return Task.FromResult(new AuthResponse(newAccessToken, newRefreshToken, userDto));
+            return new AuthResponse(newAccessToken, newRefreshToken, userDto);
         }
     }
 }
