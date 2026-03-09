@@ -17,6 +17,7 @@ namespace CardDisputeAPI.Controllers
             _authService = authService;
         }
 
+        /// <summary>Sends a one-time password to the given phone number.</summary>
         [HttpPost("send-otp")]
         public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request)
         {
@@ -25,6 +26,7 @@ namespace CardDisputeAPI.Controllers
             return Ok(new { success = true, message = "OTP sent successfully", otp, expiresIn = 300 });
         }
 
+        /// <summary>Verifies the OTP and returns access and refresh tokens.</summary>
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
         {
@@ -32,6 +34,7 @@ namespace CardDisputeAPI.Controllers
             return Ok(new { success = true, data = response });
         }
 
+        /// <summary>Issues a new access token using a valid refresh token.</summary>
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request)
         {
@@ -49,6 +52,7 @@ namespace CardDisputeAPI.Controllers
             }
         }
 
+        /// <summary>Invalidates the provided refresh token.</summary>
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {

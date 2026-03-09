@@ -3,6 +3,8 @@ using CardDisputePortal.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.Caching.Memory;
+
 
 namespace CardDisputeAPI.Controllers
 {
@@ -13,19 +15,28 @@ namespace CardDisputeAPI.Controllers
     public class TransactionsController : ControllerBase
     {
         private readonly ITransactionService _transactionService;
+        private readonly IMemoryCache _cache;
 
-        public TransactionsController(ITransactionService transactionService)
+        public TransactionsController(ITransactionService transactionService, IMemoryCache cache)
         {
             _transactionService = transactionService;
+            _cache = cache;
         }
 
+        /// <summary>Returns a paginated list of transactions for the specified user.</summary>
         [HttpPost("list")]
         public async Task<IActionResult> GetTransactions([FromBody] GetTransactionsRequest request)
         {
-            var response = await _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
+            var key = $"transactions:{request.UserId}:{request.Page}:{request.Limit}:{request.SortBy}:{request.SortOrder}";
+            var response = await _cache.GetOrCreateAsync(key, entry =>
+            {
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+                return _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
+            });
             return Ok(new { success = true, data = response });
         }
 
+        /// <summary>Creates dummy transactions for testing purposes.</summary>
         [HttpPost("create-dummy")]
         public async Task<IActionResult> CreateDummyTransactions([FromBody] CreateDummyTransactionsRequest request)
         {
@@ -34,6 +45,7 @@ namespace CardDisputeAPI.Controllers
         }
 
 
+        /// <summary>Returns a single transaction by ID.</summary>
         [HttpGet("{id}")]
         [ResponseCache(Duration = 60, VaryByHeader = "Authorization")]
         public async Task<IActionResult> GetTransaction(Guid id)
