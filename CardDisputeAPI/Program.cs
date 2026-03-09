@@ -7,11 +7,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CardDisputePortal.API.Middleware;
 using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using FluentValidation;
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
-using Microsoft.AspNetCore.Mvc;
 
 
 var builder = WebApplication.CreateBuilder(args);
