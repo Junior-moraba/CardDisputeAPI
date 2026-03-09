@@ -28,7 +28,7 @@ namespace CardDisputeAPI.Controllers
 
         /// <summary>Creates a new dispute for a transaction.</summary>
         [HttpPost]
-        // [Consumes("application/json", "multipart/form-data")]
+        [Consumes("application/json", "multipart/form-data")]
         public async Task<IActionResult> CreateDispute()
         {
             CreateDisputeRequest request;
@@ -69,6 +69,14 @@ namespace CardDisputeAPI.Controllers
             }
 
             var dispute = await _disputeService.CreateDisputeAsync(request.UserId, request);
+
+            var transKey = _cache.Get<HashSet<string>>($"transactions:{request.UserId}");
+            if (transKey != null) foreach (var key in transKey) _cache.Remove(key);
+            _cache.Remove($"transactions:{request.UserId}");
+
+            var dispsKey = _cache.Get<HashSet<string>>($"disputes:{request.UserId}");
+            if (dispsKey != null) foreach (var key in dispsKey) _cache.Remove(key);
+            _cache.Remove($"disputes:{request.UserId}");
             return CreatedAtAction(nameof(GetDispute), new { id = dispute.Id }, new { success = true, data = dispute });
         }
 
@@ -80,10 +88,13 @@ namespace CardDisputeAPI.Controllers
             var response = await _cache.GetOrCreateAsync(key, entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+                var keys = _cache.GetOrCreate($"disputes:{request.UserId}", e => new HashSet<string>())!;
+                keys.Add(key);
                 return _disputeService.GetDisputesAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
             });
             return Ok(new { success = true, data = response });
         }
+
 
         /// <summary>Returns a single dispute by ID.</summary>
         [HttpGet("{id}")]

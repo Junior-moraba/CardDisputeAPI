@@ -47,7 +47,7 @@ docker-compose logs -f api
 
 ### 5. Stop Containers
 ```bash
-docker-compose down
+docker-compose down -v
 ```
 
 ## Test User

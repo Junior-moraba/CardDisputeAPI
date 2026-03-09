@@ -23,6 +23,10 @@ namespace CardDisputeAPI.Controllers
             _cache = cache;
         }
 
+        private void InvalidateTransactionCache(Guid userId) =>
+            _cache.Remove($"transactions:{userId}");
+
+
         /// <summary>Returns a paginated list of transactions for the specified user.</summary>
         [HttpPost("list")]
         public async Task<IActionResult> GetTransactions([FromBody] GetTransactionsRequest request)
@@ -31,6 +35,9 @@ namespace CardDisputeAPI.Controllers
             var response = await _cache.GetOrCreateAsync(key, entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(60);
+                // Track key for invalidation
+                var keys = _cache.GetOrCreate($"transactions:{request.UserId}", e => new HashSet<string>())!;
+                keys.Add(key);
                 return _transactionService.GetTransactionsAsync(request.UserId, request.Page, request.Limit, request.SortBy, request.SortOrder);
             });
             return Ok(new { success = true, data = response });
@@ -41,6 +48,9 @@ namespace CardDisputeAPI.Controllers
         public async Task<IActionResult> CreateDummyTransactions([FromBody] CreateDummyTransactionsRequest request)
         {
             var transactions = await _transactionService.CreateDummyTransactionsAsync(request.UserId);
+            var keys = _cache.Get<HashSet<string>>($"transactions:{request.UserId}");
+            if (keys != null) foreach (var key in keys) _cache.Remove(key);
+            _cache.Remove($"transactions:{request.UserId}");
             return Ok(new { success = true, message = $"Created {transactions.Count} dummy transactions", data = transactions });
         }
 
