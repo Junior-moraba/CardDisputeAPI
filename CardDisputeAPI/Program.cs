@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.Configure<MvcOptions>(options =>
 {
     options.Filters.Add(new ConsumesAttribute("application/json"));
